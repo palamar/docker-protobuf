@@ -1,16 +1,11 @@
-FROM alpine:latest as compiler
+FROM php:5.6-cli-alpine as compiler
 
-RUN apk add --update git build-base autoconf automake libtool curl
-RUN rm -rf /tmp/protobuf && mkdir /tmp/protobuf
-RUN cd /tmp/ && git clone https://github.com/google/protobuf -b v3.5.1.1
-RUN cd /tmp/protobuf && ./autogen.sh
-RUN cd /tmp/protobuf && ./configure
-RUN cd /tmp/protobuf && make
-RUN cd /tmp/protobuf && make install
-RUN apk del git build-base autoconf automake libtool curl
-RUN rm -rf /tmp/*
-RUN apk add libstdc++
+RUN apk update
+RUN apk add protobuf 
+RUN pecl channel-update pecl.php.net
+RUN pear install Console_CommandLine
+RUN pear channel-discover pear.pollinimini.net
+RUN pear install drslump/Protobuf-beta
 RUN mkdir -p /tmp/src
+RUN echo 'error_reporting = E_ALL & ~E_WARNING;' > /usr/local/etc/php/php.ini
 WORKDIR /tmp/src
-
-ENTRYPOINT [ "protoc" ]
